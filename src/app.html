@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EARTHWORKS · Dust Bowl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EFE6D8; --paper2:#E6DBC9; --ink:#2B211B; --ink2:#5A4C40; --red:#C2462B; --red2:#A63A22;
+    --night:#1F1A16; --night2:#2C2520; --line:#CDBFAA;
+    --prairie:#7D8A4C; --young:#A9B173; --wheat:#D9A441; --cover:#9AA548; --tree:#3E5631; --sap:#6F8A55;
+    --soil3:#8A5A36; --soil2:#A9764C; --soil1:#C79A6C; --soil0:#E2C9A6;
+    --mono:'Space Mono', ui-monospace, monospace; --head:'Archivo Black', 'Archivo', sans-serif; --body:'Archivo', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#D9CDB9;color:var(--ink);font-family:var(--body)}
+  body{min-height:100vh;display:flex;justify-content:center}
+  .phone{width:100%;max-width:440px;min-height:100vh;background:var(--paper);position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px #c9bba5}
+  .phone.dark{background:var(--night);color:#F2E8D8}
+  header.bar{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 8px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+  .dark header.bar{color:#B8A893}
+  main{flex:1;padding:6px 18px 18px;display:flex;flex-direction:column;gap:12px}
+  h1.title{font-family:var(--head);font-size:56px;line-height:.88;margin:18px 0 6px;letter-spacing:-.01em}
+  h1.title span{color:var(--red)}
+  h2{font-family:var(--head);font-size:30px;line-height:.95;margin:4px 0 0;letter-spacing:-.01em;text-transform:uppercase}
+  h2 .red{color:var(--red)}
+  .mono{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+  .dark .mono{color:#B8A893}
+  .tag{font-family:var(--mono);font-size:12px;color:var(--ink2)}
+  label.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);display:block;margin-bottom:4px}
+  input.txt{width:100%;font:600 18px var(--body);padding:8px 2px;border:0;border-bottom:2px solid var(--ink);background:transparent;color:var(--ink);outline:none}
+  .codebox{display:flex;gap:8px}
+  .codebox input{width:52px;height:56px;text-align:center;font:400 28px var(--head);border:2px solid var(--ink);background:transparent;color:var(--ink);text-transform:uppercase;border-radius:2px}
+  button{font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:.12em;text-transform:uppercase;border:0;padding:15px 14px;cursor:pointer;border-radius:2px}
+  button.primary{background:var(--red);color:#FFF3E6}
+  button.primary:hover{background:var(--red2)}
+  button.ghost{background:transparent;border:2px solid var(--ink);color:var(--ink)}
+  .dark button.ghost{border-color:#F2E8D8;color:#F2E8D8}
+  button.dark{background:var(--ink);color:#F2E8D8}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .row{display:flex;gap:10px;align-items:center}
+  .between{display:flex;justify-content:space-between;align-items:center}
+  .card{border:2px solid var(--ink);padding:12px;background:var(--paper)}
+  .card.ink{background:var(--ink);color:#F2E8D8}
+  .card.soft{border:1.5px dashed var(--line);background:transparent}
+  .small{font-size:13px;line-height:1.4}
+  .note{font-size:12px;color:var(--ink2);line-height:1.4}
+  .hr{height:2px;background:var(--ink);margin:2px 0}
+  .players li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-weight:600}
+  .players{list-style:none;margin:0;padding:0}
+  .dot{width:12px;height:12px;border-radius:50%;flex:none}
+  .pill{vertical-align:middle;display:inline-block;line-height:1.3;font-family:var(--mono);font-size:10px;border:1px solid var(--ink2);padding:1px 6px;border-radius:2px;color:var(--ink2);text-transform:uppercase}
+  .timer{font-family:var(--head);font-size:30px;color:var(--red)}
+  .windbar{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--red)}
+  .progress{height:4px;background:var(--line);position:relative}
+  .progress > i{position:absolute;left:0;top:0;bottom:0;background:var(--red)}
+  /* board */
+  .boardwrap{position:relative;align-self:center;width:100%}
+  .board{display:grid;gap:3px;background:var(--ink);padding:3px;touch-action:none;user-select:none;-webkit-user-select:none}
+  .tile{position:relative;aspect-ratio:1;cursor:pointer;overflow:hidden}
+  .tile .bars{position:absolute;left:3px;bottom:3px;display:flex;gap:2px}
+  .tile .bars i{display:block;width:4px;height:6px;background:rgba(43,33,27,.75)}
+  .tile .bars i.off{background:rgba(43,33,27,.15)}
+  .tile svg{position:absolute;inset:0;width:100%;height:100%}
+  .tile.shelter::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.28) 0 3px,transparent 3px 7px)}
+  .tile.funnel::after{content:"!";position:absolute;right:3px;top:1px;font:700 12px var(--mono);color:var(--red)}
+  .tile.changed{outline:2px solid var(--red);outline-offset:-2px}
+  .tile.flash{animation:flash .5s}
+  @keyframes flash{0%{filter:brightness(1.6)}100%{filter:none}}
+  .windarrow{position:absolute;font:700 18px var(--mono);color:var(--red)}
+  .tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .tool{border:2px solid var(--ink);background:var(--paper);padding:7px 4px 6px;text-align:center;cursor:pointer;font-family:var(--mono);font-size:10px;text-transform:uppercase;line-height:1.25;border-radius:2px;color:var(--ink)}
+  .tool .sw{width:26px;height:26px;margin:0 auto 4px;position:relative}
+  .tool .sw svg{width:100%;height:100%}
+  .tool.on{background:var(--ink);color:#F2E8D8}
+  .tool small{display:block;color:inherit;opacity:.75;font-size:9px}
+  .money{font-family:var(--head);font-size:22px}
+  .bad{color:var(--red)}
+  .big{font-family:var(--head);font-size:64px;line-height:.9;color:var(--red)}
+  .lesson{border-left:4px solid var(--red);padding:6px 10px;font-weight:600;font-size:15px;line-height:1.35;background:rgba(194,70,43,.06)}
+  .dark .lesson{background:rgba(255,255,255,.05)}
+  .minis{display:flex;gap:6px;flex-wrap:wrap}
+  .mini{flex:1;min-width:80px}
+  .mini .board{gap:1px;padding:1px}
+  .mini .name{font-family:var(--mono);font-size:10px;text-transform:uppercase;margin-top:3px;display:flex;align-items:center;gap:4px}
+  .stand li{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+  .stand .rank{font-family:var(--head);font-size:22px}
+  .stand .sc{font-family:var(--head);font-size:22px;text-align:right}
+  .stand .sub{margin-top:3px;font-family:var(--mono);font-size:10px;color:var(--ink2);text-transform:uppercase}
+  canvas.dust{position:absolute;inset:0;pointer-events:none}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px}
+  .legend div{display:flex;gap:6px;align-items:center}
+  .sw2{width:14px;height:14px;flex:none;border:1px solid var(--ink)}
+  .status{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px;color:var(--ink2)}
+  .status i{width:7px;height:7px;border-radius:50%;background:#a99;display:inline-block}
+  .status.live i{background:#5b8a3a}
+  .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--ink);color:#F2E8D8;font:12px var(--mono);padding:10px 14px;max-width:400px;z-index:9;display:none}
+  a{color:inherit}
+  .footer{font-size:11px;color:var(--ink2);line-height:1.5}
+  .yearcard{background:var(--ink);color:#F2E8D8;padding:10px 12px;display:flex;gap:12px;align-items:center}
+  .yearcard .yr{font-family:var(--head);font-size:30px;color:var(--wheat)}
+  .yearcard .t{font-weight:800;font-size:15px}
+  .yearcard .b{font-size:12.5px;opacity:.85;line-height:1.35}
+  .tipline{font-size:12.5px;line-height:1.4;color:var(--ink2);min-height:34px}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .compare .card{padding:10px}
+  .compare .num{font-family:var(--head);font-size:30px}
+  ul.clean{margin:0;padding-left:18px}
+  ul.clean li{margin:4px 0}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <header class="bar"><span id="hdrL">EARTHWORKS</span><span id="hdrR" class="status"><i></i><span>checking room…</span></span></header>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/*__ENGINE__*/
+</script>
+<script>
+(function(){
+"use strict";
+var $ = function(s, el){ return (el||document).querySelector(s); };
+var main = $("#main"), phone = $("#phone");
+var COLORS = ["#C2462B","#2F6E8E","#D9A441","#5B8A3A","#7A4E9C","#B5651D","#3E5631","#C77B9E"];
+var BOT_NAMES = { boomer: "Boom Bot", steward: "Steward Bot", rancher: "Rancher Bot" };
+var BOT_KINDS = ["boomer","steward","rancher"];
+var BUILD_MS = [90000, 60000, 60000];
+var FORCE_MS = 7500;
+
+// ---------- local state ----------
+var me = { name: "", color: COLORS[0], peer: null };
+var roomNS = null, room = null, roomReady = false;
+var isHost = false, solo = false, code = "";
+var G = null;           // host's authoritative game
+var V = null;           // the state this view renders (host's payload)
+var hostPeer = null, lastStateAt = 0;
+var plan = null, planFor = "";     // my working plan for this round
+var tool = "W", locked = false;
+var forceAnim = null;
+var screen = "join";
+function myId(){ return isHost ? "host" : me.peer; }
+
+function toast(msg){ var t=$("#toast"); t.textContent=msg; t.style.display="block"; clearTimeout(toast._t); toast._t=setTimeout(function(){t.style.display="none";},3500); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];}); }
+function cleanName(s){ s=String(s||"").replace(/[^\p{L}\p{N} ._-]/gu,"").trim().slice(0,14); return s || "Farmer"; }
+function setStatus(live, text){ var h=$("#hdrR"); h.className="status"+(live?" live":""); h.innerHTML="<i></i><span>"+esc(text)+"</span>"; }
+function fmt$(n){ return "$" + (Math.round(n*10)/10).toFixed(n%1?1:0); }
+
+// ---------- tile drawing ----------
+var TYPE_NAME = { P:"Native prairie", Y:"Young grass", W:"Wheat", C:"Wheat + cover crop", S:"Tree row (sapling)", T:"Tree row" };
+function soilColor(s){ return s>=7? "var(--soil3)" : s>=4? "var(--soil2)" : s>=1? "var(--soil1)" : "var(--soil0)"; }
+function tileSVG(type, soil){
+  var bg = soilColor(soil), g = "";
+  if (type==="P") g = '<rect width="40" height="40" fill="var(--prairie)"/>' + tufts("#5E6B34");
+  else if (type==="Y") g = '<rect width="40" height="40" fill="'+bg+'"/>' + tufts("#7E8A45", true);
+  else if (type==="W") g = '<rect width="40" height="40" fill="'+bg+'"/>' + (soil>0 ? rowsW("var(--wheat)") : cracks());
+  else if (type==="C") g = '<rect width="40" height="40" fill="'+bg+'"/>' + rowsW("var(--wheat)") + '<g fill="#5E7A2E"><circle cx="8" cy="13" r="2"/><circle cx="20" cy="13" r="2"/><circle cx="32" cy="13" r="2"/><circle cx="14" cy="27" r="2"/><circle cx="26" cy="27" r="2"/></g>';
+  else if (type==="S") g = '<rect width="40" height="40" fill="'+bg+'"/><path d="M20 10 L28 28 L12 28Z" fill="var(--sap)"/>';
+  else if (type==="T") g = '<rect width="40" height="40" fill="#5E7A47"/><path d="M12 4 L20 20 L4 20Z M28 4 L36 20 L20 20Z M20 18 L29 36 L11 36Z" fill="var(--tree)"/>';
+  return '<svg viewBox="0 0 40 40" preserveAspectRatio="none">'+g+'</svg>';
+}
+function tufts(c, sparse){ var p=""; var pts = sparse? [[10,14],[28,24],[16,32]] : [[8,10],[22,8],[33,16],[13,22],[27,27],[9,33],[31,35],[20,18]];
+  pts.forEach(function(q){ p += '<path d="M'+q[0]+' '+(q[1]+4)+' l-2 -6 M'+q[0]+' '+(q[1]+4)+' l0 -7 M'+q[0]+' '+(q[1]+4)+' l2 -6" stroke="'+c+'" stroke-width="1.6" fill="none" stroke-linecap="round"/>'; }); return p; }
+function rowsW(c){ return '<g stroke="'+c+'" stroke-width="3.4" stroke-linecap="round"><line x1="5" y1="9" x2="35" y2="9"/><line x1="5" y1="20" x2="35" y2="20"/><line x1="5" y1="31" x2="35" y2="31"/></g>'; }
+function cracks(){ return '<path d="M4 12 L14 16 L20 10 L30 15 M10 30 L18 24 L26 30 L36 26" stroke="#B89A76" stroke-width="1.2" fill="none"/>'; }
+function bars(s){ var n = s<=0?0: Math.ceil(s/3), h=""; for (var i=0;i<3;i++) h += '<i class="'+(i<n?"":"off")+'"></i>'; return '<span class="bars">'+h+'</span>'; }
+
+function boardHTML(str, opts){
+  opts = opts||{}; var tiles = DB.decode(str), h = "";
+  var sm = opts.wind ? DB.shelterMap(tiles, opts.wind) : null;
+  var base = opts.base ? DB.decode(opts.base) : null;
+  tiles.forEach(function(t,i){
+    var cls = "tile";
+    if (sm && sm.why[i]==="shelter") cls += " shelter";
+    if (sm && sm.why[i]==="funnel") cls += " funnel";
+    if (base && base[i].type !== t.type) cls += " changed";
+    h += '<div class="'+cls+'" data-i="'+i+'" title="'+TYPE_NAME[t.type]+' · topsoil '+t.soil+'/9">'+tileSVG(t.type,t.soil)+(opts.noBars?"":bars(t.soil))+'</div>';
+  });
+  return '<div class="board" style="grid-template-columns:repeat('+DB.COLS+',1fr)">'+h+'</div>';
+}
+
+// ---------- room connection ----------
+function withTimeout(p, ms){ return Promise.race([p, new Promise(function(r){ setTimeout(function(){ r(null); }, ms); })]); }
+async function connectRoom(){
+  try {
+    if (!window.claude || typeof window.claude.use !== "function") { setStatus(false,"single device"); render(); return; }
+    roomNS = await withTimeout(window.claude.use("room"), 10000);
+  } catch(e){ roomNS = null; }
+  setStatus(!!roomNS, roomNS ? "live rooms on" : "single device");
+  render();
+}
+
+function randomCode(){ var A="ABCDEFGHJKMNPQRSTUVWXYZ", s=""; for (var i=0;i<4;i++) s+=A[Math.floor(Math.random()*A.length)]; return s; }
+
+async function joinNamed(c){
+  room = await roomNS.join("dustbowl-" + c.toLowerCase());
+  room.onPeers(function(ch){
+    ch.peers.forEach(function(p){ if (p.sameTab) me.peer = p.peer; });
+    if (isHost) hostOnPeers(ch);
+    if (!isHost && hostPeer && ch.left.some(function(p){ return p.peer===hostPeer; })) toast("The host left the room.");
+  }, function(e){ toast("Room error: " + e.code); });
+  room.on("state", function(msg){
+    if (isHost) return;
+    if (!msg || !msg.data || typeof msg.data !== "object") return;
+    if (hostPeer && msg.peer !== hostPeer) return;      // only listen to the host we locked onto
+    if (msg.data.code !== code) return;
+    hostPeer = msg.peer; lastStateAt = Date.now();
+    receive(msg.data);
+  }, function(e){ toast("Room error: " + e.code); });
+  room.onConnection(function(ok){ setStatus(ok, ok ? "room " + code : "reconnecting…"); });
+  pushPresence();
+}
+function pushPresence(){
+  if (!room) return;
+  room.presence({ name: me.name, color: me.color, plan: plan || null, locked: !!locked, bid: V ? V.bid : -1 }).catch(function(){});
+}
+
+// ---------- HOST: authoritative game ----------
+function newGame(){
+  return { code: code, v: 0, bid: 0, phase: "lobby", round: 0, endsAt: 0, players: [], plans: null };
+}
+function addPlayer(pid, name, color, bot){
+  if (G.players.length >= 8) return false;
+  if (G.players.some(function(p){ return p.pid===pid; })) return false;
+  var used = G.players.map(function(p){return p.color;});
+  if (!color || used.indexOf(color) >= 0) color = COLORS.filter(function(c){ return used.indexOf(c)<0; })[0] || COLORS[0];
+  G.players.push({ pid: pid, name: cleanName(name), color: color, bot: bot||null, board: DB.fresh(), money: DB.START_CASH, hist: [] });
+  return true;
+}
+function hostOnPeers(ch){
+  if (!G) return;
+  var changed = false;
+  if (G.phase === "lobby") {
+    ch.peers.forEach(function(p){
+      if (p.sameTab || p.kind !== "viewer") return;
+      var pr = p.presence || {};
+      if (pr.name && !G.players.some(function(x){return x.pid===p.peer;})) { if (addPlayer(p.peer, pr.name, pr.color, null)) changed = true; }
+    });
+    ch.left.forEach(function(p){
+      var i = G.players.findIndex(function(x){ return x.pid===p.peer; });
+      if (i >= 0) { G.players.splice(i,1); changed = true; }
+    });
+  }
+  if (G.phase === "build") { checkAllLocked(); updateLockStatus(); }
+  if (changed || ch.joined.length) broadcast();
+}
+function payload(){
+  var rem = G.endsAt ? Math.max(0, G.endsAt - Date.now()) : 0;
+  return { code: G.code, v: G.v, bid: G.bid, phase: G.phase, round: G.round, rem: rem,
+    players: G.players.map(function(p){ return { pid:p.pid, name:p.name, color:p.color, bot:p.bot, board:p.board, money:p.money, hist:p.hist }; }),
+    plans: G.plans, hostPid: me.peer || "host" };
+}
+function broadcast(){
+  G.v++;
+  var data = payload();
+  receive(JSON.parse(JSON.stringify(data)));
+  if (room && !solo) room.emit("state", data).catch(function(e){ if (e && e.code==="not_permitted") toast("Only people who can edit this page can host. Ask the owner to make you an editor or contributor."); });
+}
+var hostTimer = null;
+function hostLoop(){
+  clearInterval(hostTimer);
+  hostTimer = setInterval(function(){
+    if (!G) return;
+    if (G.phase === "build" && Date.now() >= G.endsAt) endBuild();
+    else if (G.phase === "force" && Date.now() >= G.endsAt) { G.phase = "reveal"; G.endsAt = 0; broadcast(); }
+    else if (!solo && Date.now() - (hostLoop._last||0) > 2500) { hostLoop._last = Date.now(); broadcast(); }   // keep late joiners in sync
+  }, 400);
+}
+function hostStart(){
+  if (G.players.length < 1) return;
+  G.round = 0; G.players.forEach(function(p){ p.board = DB.fresh(); p.money = DB.START_CASH; p.hist = []; });
+  startBuild();
+}
+function startBuild(){
+  G.phase = "build"; G.plans = null; G.bid++;
+  G.endsAt = Date.now() + (solo ? 180000 : BUILD_MS[G.round]);
+  broadcast();
+}
+function checkAllLocked(){
+  if (!G || G.phase !== "build") return;
+  var humans = G.players.filter(function(p){ return !p.bot; });
+  var all = humans.every(function(p){
+    if (p.pid === myId()) return locked;
+    var peer = room && room.peers().find(function(x){ return x.peer===p.pid; });
+    return peer && peer.presence && peer.presence.locked && peer.presence.bid === G.bid;
+  });
+  if (all) endBuild();
+}
+function validPlan(p, candidate){
+  if (typeof candidate !== "string" || candidate.length !== DB.N*2) return null;
+  var a = DB.decode(p.board), b = DB.decode(candidate);
+  for (var i=0;i<DB.N;i++){
+    if ("PYWCST".indexOf(b[i].type) < 0) return null;
+    if (b[i].type !== a[i].type && !DB.allowed(a[i].type, b[i].type)) return null;
+    b[i].soil = a[i].soil;                       // soil always comes from the host's board
+  }
+  var s = DB.encode(b);
+  return DB.planCost(p.board, s) <= p.money + 1e-9 ? s : null;
+}
+function endBuild(){
+  if (G.phase !== "build") return;
+  G.plans = G.players.map(function(p){
+    if (p.bot) return DB.botPlan(p.bot, p.board, p.money, G.round);
+    var cand = null;
+    if (p.pid === myId()) cand = plan;
+    else if (room) { var peer = room.peers().find(function(x){ return x.peer===p.pid; }); cand = peer && peer.presence && peer.presence.plan; }
+    return validPlan(p, cand) || p.board;       // no valid plan: farm stays as it was
+  });
+  G.phase = "force"; G.endsAt = Date.now() + FORCE_MS;
+  broadcast();
+}
+function hostNext(){
+  if (G.phase !== "reveal") return;
+  var res = DB.resolveRound(G.players, G.plans, G.round);
+  G.players.forEach(function(p,i){
+    var r = res.results[i];
+    p.hist.push({ cost:r.cost, income:r.income, soil: DB.soilPct(r.after) });
+    p.money = r.money; p.board = r.next;
+  });
+  if (G.round >= DB.ROUNDS.length - 1) { G.phase = "final"; G.plans = null; G.endsAt = 0; broadcast(); return; }
+  G.round++; startBuild();
+}
+function hostAgain(){
+  G.phase = "lobby"; G.round = 0; G.plans = null;
+  G.players.forEach(function(p){ p.board = DB.fresh(); p.money = DB.START_CASH; p.hist = []; });
+  if (room && !solo) room.peers().forEach(function(p){ var pr = p.presence||{}; if (!p.sameTab && p.kind==="viewer" && pr.name) addPlayer(p.peer, pr.name, pr.color, null); });
+  broadcast();
+}
+
+// ---------- everyone: receive & render ----------
+function receive(data){
+  var prev = V; V = data; V.recvAt = Date.now();
+  if (V.phase === "build") {
+    var key = V.code + ":" + V.bid;
+    var mine = myPlayer();
+    if (mine && planFor !== key) { plan = mine.board; planFor = key; locked = false; tool = "W"; pushPresence(); }
+  }
+  if (V.phase === "force" && (!prev || prev.phase !== "force" || prev.bid !== V.bid)) startForceAnim();
+  var same = prev && prev.phase === V.phase && prev.bid === V.bid && prev.round === V.round && V.phase !== "lobby" &&
+             (!!myPlayer()) === (!!(prev.players && prev.players.some(function(p){ return p.pid === myId(); })));
+  if (same) { if (V.phase === "build") updateLockStatus(); return; }
+  render();
+}
+function myPlayer(){ if (!V) return null; var id = myId(); return V.players.find(function(p){ return p.pid === id; }) || null; }
+function remaining(){ if (!V || !V.rem) return 0; return Math.max(0, V.rem - (Date.now() - V.recvAt)); }
+
+function render(){
+  phone.classList.toggle("dark", !!V && (V.phase === "force"));
+  if (!V || (V.phase === "lobby" && !isHost && !myPlayer())) {
+    if (screen === "waiting") return renderWaiting();
+    return renderJoin();
+  }
+  if (V.phase === "lobby") return renderLobby();
+  if (!myPlayer() && V.phase !== "final") return renderSpectate();
+  if (V.phase === "build") return renderBuild();
+  if (V.phase === "force") return renderForce();
+  if (V.phase === "reveal") return renderReveal();
+  if (V.phase === "final") return renderFinal();
+}
+
+// ---- join ----
+function renderJoin(){
+  screen = "join";
+  $("#hdrL").textContent = "EARTHWORKS · 01 JOIN";
+  var live = !!roomNS;
+  main.innerHTML =
+    '<h1 class="title">EARTH<br><span>WORKS</span></h1>' +
+    '<div class="tag">the land is the scoreboard</div>' +
+    '<div class="card soft small"><b>Tonight: Dust Bowl.</b> Three short rounds, 1926 to 1935. Farm your land, survive the wind, keep your topsoil. About 5 minutes.</div>' +
+    '<div><label class="lbl">Your name</label><input class="txt" id="nm" maxlength="14" placeholder="Maya" value="'+esc(me.name)+'"></div>' +
+    '<div><label class="lbl">Room code</label><div class="codebox">' +
+      [0,1,2,3].map(function(i){ return '<input maxlength="1" data-c="'+i+'" autocomplete="off"'+(live?"":" disabled")+'>'; }).join("") + '</div></div>' +
+    '<button class="primary" id="joinBtn"'+(live?"":" disabled")+'>Join</button>' +
+    '<div class="between"><button class="ghost" id="hostBtn" style="flex:1"'+(live?"":" disabled")+'>Host a room</button></div>' +
+    '<button class="dark" id="soloBtn">Play solo vs. bots</button>' +
+    (live ? '<p class="note">Everyone opens this same page, signed in to Claude. The host taps <b>Host a room</b> and reads out the code.</p>'
+          : '<p class="note">Multiplayer needs this page open on claude.ai while signed in. Solo play works anywhere.</p>');
+  var nm = $("#nm"); nm.addEventListener("input", function(){ me.name = nm.value; });
+  var boxes = Array.prototype.slice.call(main.querySelectorAll(".codebox input"));
+  boxes.forEach(function(b,i){
+    b.addEventListener("input", function(){ b.value = b.value.replace(/[^a-z]/gi,"").toUpperCase(); if (b.value && boxes[i+1]) boxes[i+1].focus(); });
+    b.addEventListener("keydown", function(e){ if (e.key==="Backspace" && !b.value && boxes[i-1]) boxes[i-1].focus(); });
+    b.addEventListener("paste", function(e){ var t=(e.clipboardData.getData("text")||"").replace(/[^a-z]/gi,"").toUpperCase().slice(0,4); if(t.length){ e.preventDefault(); boxes.forEach(function(x,j){ x.value=t[j]||""; }); } });
+  });
+  $("#soloBtn").onclick = function(){ startSolo(); };
+  $("#hostBtn").onclick = async function(){
+    me.name = cleanName(nm.value); if (!nm.value.trim()) return toast("Type your name first.");
+    this.disabled = true;
+    try { isHost = true; code = randomCode(); await joinNamed(code); G = newGame(); addPlayer("host", me.name, me.color, null); hostLoop(); broadcast(); }
+    catch(e){ isHost = false; this.disabled = false; toast(e && e.code === "not_permitted" ? "This account can't open rooms here." : "Couldn't open a room. Try again."); }
+  };
+  $("#joinBtn").onclick = async function(){
+    me.name = cleanName(nm.value); if (!nm.value.trim()) return toast("Type your name first.");
+    var c = boxes.map(function(b){return b.value;}).join("");
+    if (c.length !== 4) return toast("Enter the 4-letter room code.");
+    this.disabled = true;
+    try { code = c; isHost = false; screen = "waiting"; await joinNamed(code); renderWaiting();
+      setTimeout(function(){ if (!V) { toast("No host answered for " + code + ". Check the code."); } }, 7000);
+    } catch(e){ this.disabled = false; screen = "join"; toast("Couldn't join. Try again."); }
+  };
+}
+function renderWaiting(){
+  $("#hdrL").textContent = "EARTHWORKS · ROOM " + code;
+  main.innerHTML = '<h2>Joining<br><span class="red">'+esc(code)+'</span></h2><p class="small">Waiting for the host…</p>' +
+    (V && V.phase !== "lobby" ? '<p class="note">A game is in progress. You\'ll be able to join the next one.</p>' : '');
+}
+
+// ---- solo ----
+function startSolo(){
+  me.name = cleanName(($("#nm")||{}).value || me.name || "You");
+  solo = true; isHost = true; code = "SOLO"; me.peer = "host";
+  G = newGame(); addPlayer("host", me.name, me.color, null);
+  addPlayer("bot-boomer", BOT_NAMES.boomer, null, "boomer");
+  addPlayer("bot-steward", BOT_NAMES.steward, null, "steward");
+  addPlayer("bot-rancher", BOT_NAMES.rancher, null, "rancher");
+  hostLoop(); broadcast();
+}
+
+// ---- lobby ----
+function renderLobby(){
+  $("#hdrL").textContent = "EARTHWORKS · 02 LOBBY";
+  var host = isHost;
+  var list = V.players.map(function(p){
+    var you = p.pid === (isHost ? myId() : me.peer);
+    return '<li><span class="dot" style="background:'+p.color+'"></span><span style="flex:1">'+esc(p.name)+(you?' <span class="pill">you</span>':'')+(p.bot?' <span class="pill">bot</span>':'')+'</span>' +
+      (host && p.bot ? '<button class="ghost" data-rm="'+esc(p.pid)+'" style="padding:4px 8px;font-size:10px">remove</button>' : '<span class="mono">ready</span>') + '</li>';
+  }).join("");
+  main.innerHTML =
+    '<div class="between"><div><div class="mono">Room</div><h1 class="title" style="font-size:52px;margin:2px 0">'+esc(V.code)+'</h1></div><div class="mono">'+V.players.length+' / 8</div></div>' +
+    '<ul class="players">'+list+'</ul>' +
+    '<div class="card ink small"><div class="mono" style="color:#B8A893">Tonight\'s game</div><div style="font:400 22px var(--head);margin:4px 0">DUST BOWL</div>' +
+      'Your farms sit in a row on the Great Plains, and the wind blows from one farm onto the next. Plow for profit, or protect the soil? Your score at the end is your <b>cash × the share of topsoil you kept</b>.</div>' +
+    (host ? '<div class="row"><button class="ghost" id="addBot" style="flex:1">+ Add a bot</button></div><button class="primary" id="start">Host: start</button>'
+          : '<button class="ghost" disabled>Waiting for host to start</button>') +
+    (host && !solo ? '<p class="note">Players join from this same page with code <b>'+esc(V.code)+'</b>. Bots fill empty farms and give everyone something to compare against.</p>' : '');
+  if (host) {
+    $("#start").onclick = hostStart;
+    $("#addBot").onclick = function(){
+      var have = G.players.filter(function(p){return p.bot;}).map(function(p){return p.bot;});
+      var kind = BOT_KINDS.filter(function(k){ return have.indexOf(k)<0; })[0] || BOT_KINDS[have.length % 3];
+      var n = 1; while (G.players.some(function(p){ return p.pid === "bot-"+kind+(n>1?n:""); })) n++;
+      addPlayer("bot-"+kind+(n>1?n:""), BOT_NAMES[kind]+(n>1?" "+n:""), null, kind); broadcast();
+    };
+    main.querySelectorAll("[data-rm]").forEach(function(b){ b.onclick = function(){ var id=b.getAttribute("data-rm"); G.players = G.players.filter(function(p){return p.pid!==id;}); broadcast(); }; });
+  }
+}
+
+// ---- build ----
+var TOOLS = [
+  { k:"W", name:"Wheat", sub:"+$3/yr · free" },
+  { k:"C", name:"Cover", sub:"wheat · $1/yr" },
+  { k:"S", name:"Trees", sub:"$2 · grows" },
+  { k:"Y", name:"Re-grass", sub:"$1 · slow" }
+];
+var TIPS = {
+  W:"Wheat earns the most, but bare plowed soil blows away in dry, windy years.",
+  C:"A cover crop keeps roots and residue on the soil and cuts erosion a lot, but not to zero. In a drought it competes with the wheat for water.",
+  S:"A tree row shelters about 3 tiles downwind once grown (real windbreaks protect ~10× their height). Plant ACROSS the wind. Gaps funnel wind.",
+  Y:"Re-seeding grass on plowed ground is slow. Young grass holds some soil this year and becomes prairie next year. Untouched native prairie never needs it."
+};
+function windWord(w){ return w==="W" ? "from the west →" : "from the north ↓"; }
+function renderBuild(){
+  var R = DB.ROUNDS[V.round], mine = myPlayer();
+  $("#hdrL").textContent = "EARTHWORKS · ROUND " + (V.round+1) + "/3";
+  var cost = DB.planCost(mine.board, plan), over = cost > mine.money + 1e-9;
+    main.innerHTML =
+    '<div class="yearcard"><div class="yr">'+R.year+'</div><div><div class="t">'+R.title+'</div><div class="b">'+R.blurb+'</div></div></div>' +
+    '<div class="between"><h2>Dust<br>Bowl</h2><div class="timer" id="tm">'+clock(remaining())+'</div></div>' +
+    '<div class="progress"><i id="pg" style="width:0"></i></div>' +
+    '<div class="windbar">wind '+windWord(R.wind)+'<span style="flex:1"></span><span>'+(R.moist<1?"soil is moist":"soil is dry")+'</span></div>' +
+    '<div class="boardwrap" id="bw">'+boardHTML(plan, { wind: R.wind, base: mine.board })+'</div>' +
+    '<div class="tools">'+TOOLS.map(function(t){ return '<div class="tool'+(tool===t.k?" on":"")+'" data-t="'+t.k+'"><div class="sw">'+tileSVG(t.k==="S"?"S":t.k, 9)+'</div>'+t.name+'<small>'+t.sub+'</small></div>'; }).join("")+'</div>' +
+    '<div class="tipline" id="tip">'+TIPS[tool]+'</div>' +
+    '<div class="between"><div><div class="mono">Cash</div><div class="money">'+fmt$(mine.money)+'</div></div>' +
+      '<div style="text-align:right"><div class="mono">This year\'s spend</div><div class="money '+(over?"bad":"")+'">'+fmt$(cost)+'</div></div></div>' +
+    '<div class="row"><button class="ghost" id="reset" style="flex:1"'+(locked?" disabled":"")+'>Reset</button>' +
+      '<button class="primary" id="lock" style="flex:2"'+(over||locked?" disabled":"")+'>'+(locked?"Locked ✓":"Lock in")+'</button></div>' +
+    '<p class="note">Striped tiles are sheltered from this year\'s wind. A <b class="bad">!</b> marks a gap where wind speeds up. Tap again with the same tool to undo a tile.</p>' +
+    (isHost ? hostLockStatus() : '');
+  wireBoard();
+  main.querySelectorAll(".tool").forEach(function(el){ el.onclick = function(){ tool = el.getAttribute("data-t"); renderBuild(); }; });
+  $("#reset").onclick = function(){ plan = mine.board; pushPresence(); renderBuild(); };
+  $("#lock").onclick = function(){ locked = true; pushPresence(); if (isHost) checkAllLocked(); if (V.phase === "build") renderBuild(); };
+}
+function hostLockStatus(){
+  if (solo) return '';
+  var humans = V.players.filter(function(p){ return !p.bot; }), n = 0;
+  humans.forEach(function(p){
+    if (p.pid === myId()) { if (locked) n++; return; }
+    var peer = room && room.peers().find(function(x){ return x.peer===p.pid; });
+    if (peer && peer.presence && peer.presence.locked && peer.presence.bid === V.bid) n++;
+  });
+  return '<div class="between"><span class="mono" id="lockStat">'+n+' / '+humans.length+' locked in</span><button class="ghost" id="forceEnd" style="padding:6px 10px;font-size:10px">Host: end round now</button></div>';
+}
+function updateLockStatus(){
+  if (!isHost || solo) return;
+  var el = $("#lockStat"); if (!el) return;
+  var tmp = document.createElement("div"); tmp.innerHTML = hostLockStatus();
+  var n = tmp.querySelector("#lockStat"); if (n) el.textContent = n.textContent;
+}
+function wireBoard(){
+  var mine = myPlayer(), base = DB.decode(mine.board), board = $("#bw .board");
+  if (!board) return;
+  var painting = false, mode = null;
+  function apply(el){
+    if (locked || !el || !el.dataset) return;
+    var i = +el.dataset.i; if (isNaN(i)) return;
+    var t = DB.decode(plan);
+    if (mode === null) mode = (t[i].type === tool && base[i].type !== tool) ? "undo" : "paint";
+    if (mode === "undo") { if (t[i].type === tool) t[i].type = base[i].type; }
+    else {
+      if (t[i].type === tool) return;
+      if (!DB.allowed(base[i].type, tool)) {
+        toast(tool==="Y" && base[i].type==="P" ? "That's already native prairie: the best soil-holder there is." : "Not allowed on that tile.");
+        return;
+      }
+      t[i].type = tool;
+    }
+    var next = DB.encode(t);
+    if (DB.planCost(mine.board, next) > mine.money + 1e-9 && DB.planCost(mine.board, next) > DB.planCost(mine.board, plan)) { toast("Not enough cash for that."); return; }
+    plan = next; refreshBoardOnly();
+  }
+  board.addEventListener("pointerdown", function(e){ painting = true; mode = null; board.setPointerCapture && board.setPointerCapture(e.pointerId); apply(e.target.closest(".tile")); });
+  board.addEventListener("pointermove", function(e){ if (!painting) return; var el = document.elementFromPoint(e.clientX, e.clientY); apply(el && el.closest && el.closest(".tile")); });
+  var stop = function(){ if (painting) { painting = false; pushPresence(); if (V.phase === "build") renderBuild(); } };
+  board.addEventListener("pointerup", stop); board.addEventListener("pointercancel", stop);
+  var fe = $("#forceEnd"); if (fe) fe.onclick = function(){ endBuild(); };
+}
+function refreshBoardOnly(){
+  var R = DB.ROUNDS[V.round], mine = myPlayer(), bw = $("#bw");
+  var tmp = document.createElement("div"); tmp.innerHTML = boardHTML(plan, { wind: R.wind, base: mine.board });
+  var oldB = bw.querySelector(".board"), newB = tmp.firstChild;
+  Array.prototype.forEach.call(newB.children, function(c, i){ var o = oldB.children[i]; if (o.className !== c.className || o.innerHTML !== c.innerHTML) { o.className = c.className; o.innerHTML = c.innerHTML; o.title = c.title; } });
+  var cost = DB.planCost(mine.board, plan), money = main.querySelectorAll(".money");
+  if (money[1]) { money[1].textContent = fmt$(cost); money[1].classList.toggle("bad", cost > mine.money); }
+}
+function clock(ms){ var s = Math.ceil(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function renderSpectate(){
+  $("#hdrL").textContent = "EARTHWORKS · ROOM " + V.code;
+  main.innerHTML = '<h2>Game in<br><span class="red">progress</span></h2><p class="small">You joined mid-game ('+DB.ROUNDS[V.round].year+'). You\'ll be added when the host starts the next game.</p>' + minisHTML(V.players.map(function(p){return p.board;}));
+}
+setInterval(function(){
+  if (V && V.phase === "build") {
+    var tm = $("#tm"), pg = $("#pg"); var rem = remaining(), tot = solo ? 180000 : BUILD_MS[V.round];
+    if (tm) tm.textContent = clock(rem); if (pg) pg.style.width = (100 - 100*rem/tot) + "%";
+  }
+  if (!isHost && V && Date.now() - lastStateAt > 12000 && V.phase !== "final" && lastStateAt) { lastStateAt = Date.now(); toast("Lost touch with the host. Waiting…"); }
+}, 250);
+
+// ---- force: the wind ----
+function startForceAnim(){
+  var sim = DB.simulateWind(V.plans, V.round);
+  forceAnim = { sim: sim, gust: -1, startedAt: Date.now() };
+}
+function minisHTML(boards, highlight){
+  return '<div class="minis">' + boards.map(function(b,i){
+    var p = V.players[i];
+    return '<div class="mini">'+boardHTML(b, { noBars:true })+'<div class="name"><span class="dot" style="background:'+p.color+';width:8px;height:8px"></span>'+esc(p.name)+(highlight===i?" ·you":"")+'</div></div>';
+  }).join('<div class="mono" style="align-self:center">→</div>') + '</div>';
+}
+function renderForce(){
+  var R = DB.ROUNDS[V.round], idx = V.players.indexOf(myPlayer());
+  if (!forceAnim) startForceAnim();
+  $("#hdrL").textContent = "EARTHWORKS · THE WIND";
+  var showIdx = idx >= 0 ? idx : 0;
+  main.innerHTML =
+    '<div class="between"><h2 style="color:var(--wheat)">The<br>Wind</h2><div style="text-align:right"><div class="mono">'+R.year+' · '+R.title+'</div><div class="timer" style="color:#F2E8D8" id="gust">GUST 0/'+R.gusts+'</div></div></div>' +
+    '<div class="windbar" style="color:var(--wheat)">wind '+windWord(R.wind)+'</div>' +
+    '<div class="boardwrap" id="fw">'+boardHTML(V.plans[showIdx], {})+'<canvas class="dust" id="dust"></canvas></div>' +
+    '<div class="mono">Every farm, same wind · upwind → downwind</div>' +
+    '<div id="minis">'+minisHTML(V.plans, idx)+'</div>' +
+    '<p class="note" style="color:#B8A893">'+(R.wind==="W" ? "Dust that leaves the east edge of a farm lands on the next farm downwind." : "This storm comes from the north. Tree rows running north–south give it nothing to hit.")+'</p>';
+  runDust(showIdx);
+}
+function runDust(showIdx){
+  var R = DB.ROUNDS[V.round], cv = $("#dust"), fw = $("#fw");
+  if (!cv) return;
+  var ctx = cv.getContext("2d"), dpr = window.devicePixelRatio || 1;
+  function size(){ cv.width = fw.clientWidth*dpr; cv.height = fw.clientHeight*dpr; }
+  size();
+  var parts = [], frames = forceAnim.sim.frames, per = (FORCE_MS - 1200) / frames.length;
+  var start = forceAnim.startedAt, lastGust = -1, raf;
+  function step(){
+    if (!document.body.contains(cv)) { cancelAnimationFrame(raf); return; }
+    var t = Date.now() - start, g = Math.min(frames.length-1, Math.floor(t / per));
+    if (g !== lastGust && t >= 0) {
+      lastGust = g; var gl = $("#gust"); if (gl) gl.textContent = "GUST " + (g+1) + "/" + frames.length;
+      // update tiles of the big board + minis to this gust's soil
+      var prevSoil = g>0 ? frames[g-1] : V.plans.map(function(b){ return DB.decode(b).map(function(x){return x.soil;}); });
+      var big = fw.querySelector(".board");
+      var types = DB.decode(V.plans[showIdx]);
+      frames[g][showIdx].forEach(function(s, i){
+        if (s !== prevSoil[showIdx][i]) { var el = big.children[i]; el.innerHTML = tileSVG(types[i].type, s) + bars(s); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+          for (var k=0;k<6;k++) spawn(i, true); }
+      });
+      var minis = document.querySelectorAll("#minis .mini .board");
+      frames[g].forEach(function(soils, f){
+        var ty = DB.decode(V.plans[f]);
+        soils.forEach(function(s,i){ if (s !== prevSoil[f][i] && minis[f]) minis[f].children[i].innerHTML = tileSVG(ty[i].type, s); });
+      });
+      for (var k=0;k<40*R.strength*R.moist+8;k++) spawn(-1, false);
+    }
+    ctx.clearRect(0,0,cv.width,cv.height);
+    parts.forEach(function(p){ p.x += p.vx; p.y += p.vy; p.life--; ctx.globalAlpha = Math.max(0, p.life/80)*0.85; ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, p.s, p.s); });
+    parts = parts.filter(function(p){ return p.life > 0 && p.x < cv.width+20 && p.y < cv.height+20; });
+    raf = requestAnimationFrame(step);
+  }
+  function spawn(tileIdx, heavy){
+    var w = cv.width, h = cv.height, x, y;
+    if (tileIdx >= 0) { var c = tileIdx % DB.COLS, r = Math.floor(tileIdx / DB.COLS); x = (c+Math.random())*w/DB.COLS; y = (r+Math.random())*h/DB.ROWS; }
+    else if (R.wind === "W") { x = -Math.random()*w*0.3; y = Math.random()*h; }
+    else { x = Math.random()*w; y = -Math.random()*h*0.3; }
+    var sp = (heavy?3:5) * dpr * (0.6+Math.random()) * R.strength;
+    parts.push({ x:x, y:y, vx: R.wind==="W" ? sp : (Math.random()-.5)*dpr, vy: R.wind==="N" ? sp : (Math.random()-.5)*dpr*.6,
+      life: 60+Math.random()*40, s: (heavy?3:1.6)*dpr, c: heavy ? "#C79A6C" : (R.moist<1 ? "#9fb6c9" : "#D9B98C") });
+  }
+  raf = requestAnimationFrame(step);
+}
+
+// ---- reveal ----
+function roundOutcome(){
+  var res = DB.resolveRound(V.players, V.plans, V.round);
+  return res;
+}
+function lessons(st, R, res, idx){
+  var L = [];
+  if (R.wind === "N" && st.lostWheat > 0 && st.shelter < 4) L.push("Tree rows that run north–south don't stop a north wind. A windbreak only works when it stands across the wind.");
+  if (R.moist < 1) L.push("Wet soil hardly blows. The danger starts when the rain stops, and by then the grass is already plowed.");
+  if (st.funnel > 0) L.push("A gap in your tree row funneled the wind and made it faster. Rows need to be unbroken.");
+  if (st.shelter > 0 && R.moist >= 1) L.push("Your tree rows slowed the wind behind them. A real windbreak shelters about 10 times its height downwind.");
+  if (st.avalanche > 2) L.push("Long open fields build up blowing soil like an avalanche. Strips of grass or trees break the chain.");
+  if (st.lostWheat > 0 && st.grassTiles > 0 && st.lostGrass === 0) L.push("Same wind, same drought: your plowed ground blew away, and your grass held every grain. Deep roots hold soil.");
+  if (st.got > 1) L.push("Dust from the farm upwind of you blew in and scoured your fields. One farmer's erosion becomes the neighbor's problem.");
+  if (!L.length) L.push(st.wheatTiles ? "Your soil held this year. Watch the wind direction next year." : "No plowing, no erosion, but also very little income.");
+  return L.slice(0, 2);
+}
+function renderReveal(){
+  var R = DB.ROUNDS[V.round], res = roundOutcome(), mine = myPlayer();
+  var idx = V.players.indexOf(mine); if (idx < 0) idx = 0;
+  var r = res.results[idx], st = r.stats, p = V.players[idx];
+  var kept = DB.soilPct(r.after);
+  var tbl = tableStats(res);
+  $("#hdrL").textContent = "EARTHWORKS · AFTER THE WIND";
+  var ranks = V.players.map(function(pl,i){ var rr = res.results[i]; return { p: pl, money: rr.money, soil: DB.soilPct(rr.after), score: DB.finalScore(rr.money, rr.after) }; })
+    .sort(function(a,b){ return b.score - a.score; });
+  main.innerHTML =
+    '<div class="mono">'+R.year+' · '+R.title+'</div><h2>What\'s<br>left</h2>' +
+    '<div class="boardwrap">'+boardHTML(r.after, { base: p.board })+'</div>' +
+    '<div class="between"><div><div class="mono">Topsoil kept</div><div class="big">'+kept+'%</div></div>' +
+      '<div style="text-align:right"><div class="mono">This year</div><div class="money">+'+fmt$(r.income)+'</div><div class="mono">spent '+fmt$(r.cost)+' · cash '+fmt$(r.money)+'</div></div></div>' +
+    lessons(st, R, res, idx).map(function(l){ return '<div class="lesson">'+esc(l)+'</div>'; }).join("") +
+    (tbl ? '<div class="compare"><div class="card"><div class="mono">Grass tiles, everyone</div><div class="num">'+tbl.grass+'%</div><div class="note">topsoil kept</div></div><div class="card"><div class="mono">Plowed tiles, everyone</div><div class="num bad">'+tbl.plowed+'%</div><div class="note">topsoil kept</div></div></div>' : '') +
+    '<div class="hr"></div><div class="mono">Standings · score = cash × topsoil kept</div>' +
+    '<ul class="players stand">'+ranks.map(function(x,i){ return '<li><span class="rank">'+(i+1)+'</span><span><span class="dot" style="display:inline-block;background:'+x.p.color+';width:9px;height:9px;margin-right:6px"></span>'+esc(x.p.name)+'<div class="sub">'+fmt$(x.money)+' · soil '+x.soil+'%</div></span><span class="sc">'+x.score+'</span></li>'; }).join("")+'</ul>' +
+    (isHost ? '<button class="primary" id="next">'+(V.round >= 2 ? "Host: final results" : "Host: next year")+'</button>' : '<button class="ghost" disabled>Waiting for host</button>');
+  if (isHost) $("#next").onclick = hostNext;
+}
+function tableStats(res){
+  var gT=0,gL=0,wT=0,wL=0;
+  res.results.forEach(function(r){ gT+=r.stats.grassTiles; gL+=r.stats.lostGrass; wT+=r.stats.wheatTiles; wL+=r.stats.lostWheat; });
+  if (!gT || !wT) return null;
+  return { grass: Math.round(100 - 100*gL/(gT*DB.SOIL_MAX)), plowed: Math.round(100 - 100*wL/(wT*DB.SOIL_MAX)) };
+}
+
+// ---- final ----
+function renderFinal(){
+  $("#hdrL").textContent = "EARTHWORKS · FINAL";
+  var ranks = V.players.map(function(p){ return { p:p, money:p.money, soil:DB.soilPct(p.board), score:DB.finalScore(p.money,p.board) }; }).sort(function(a,b){ return b.score-a.score; });
+  var mine = myPlayer(), myRank = ranks.findIndex(function(x){ return x.p === mine; });
+  var richest = ranks.slice().sort(function(a,b){ return b.money-a.money; })[0];
+  main.innerHTML =
+    '<div class="mono">1926 → 1935</div><h2>Your<br><span class="red">Earthwork</span></h2>' +
+    (mine ? '<div class="boardwrap">'+boardHTML(mine.board, {})+'</div>' : '') +
+    '<ul class="players stand">'+ranks.map(function(x,i){ return '<li><span class="rank">'+(i+1)+'</span><span><span class="dot" style="display:inline-block;background:'+x.p.color+';width:9px;height:9px;margin-right:6px"></span>'+esc(x.p.name)+(x.p===mine?' <span class="pill">you</span>':'')+'<div class="sub">'+fmt$(x.money)+' cash × '+x.soil+'% soil</div></span><span class="sc">'+x.score+'</span></li>'; }).join("")+'</ul>' +
+    (richest && richest !== ranks[0] ? '<div class="lesson">'+esc(richest.p.name)+' made the most money ('+fmt$(richest.money)+'), but with '+richest.soil+'% of the topsoil left, the farm is worth far less.</div>' : '') +
+    '<div class="card ink small"><div class="mono" style="color:#B8A893">Myth</div><div style="font-weight:800;font-size:16px;margin:2px 0 8px">"The Dust Bowl was a natural disaster caused by drought."</div>' +
+      '<div class="mono" style="color:var(--wheat)">What actually happened</div>The same drought hit every farm at your table. The difference was the ground: native grass with deep roots held the soil, and plowed fields blew away. On the real Plains, millions of acres of grassland were plowed in the 1920s boom, and when the drought came there was nothing left holding the soil down.</div>' +
+    '<div class="card soft small"><b>Talk about it</b><ul class="clean"><li>When did plowing pay off, and when did it stop paying?</li><li>Why did tree rows that worked in 1932 fail in 1935?</li><li>Whose dust ended up on whose farm? Who should pay for that?</li></ul></div>' +
+    (isHost ? '<button class="primary" id="again">Play again</button>' : '<button class="ghost" disabled>Waiting for host</button>') +
+    '<p class="footer">Rules based on USDA NRCS windbreak standards (shelter ≈ 10× tree height downwind; gaps funnel wind), SARE cover-crop research, and Dust Bowl history. Numbers are simplified for play.</p>';
+  if (isHost) $("#again").onclick = hostAgain;
+}
+
+// ---------- boot ----------
+render();
+connectRoom();
+})();
+</script>
+</body>
+</html>
